@@ -1,16 +1,16 @@
 {
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/backend" }
+  ],
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2020",
-    "lib": ["ES2022"],
     "strict": true,
     "esModuleInterop": true,
     "types": ["node"],
     "resolveJsonModule": true,
-    "paths": {
-      "@dddforum/backend/*": ["./packages/backend/*"],
-      "@dddforum/frontend/*": ["./packages/frontend/*"],
-      "@dddforum/shared/*": ["./packages/shared/*"]
-    }
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true
   }
 }
