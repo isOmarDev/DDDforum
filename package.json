@@ -10,9 +10,10 @@
     "packages/frontend"
   ],
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --workspace=@dddforum/backend\" \"npm run dev --workspace=@dddforum/frontend\"",
+    "start": "npm start -w @dddforum/backend",
     "clean": "npm run clean --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
+    "build": "tsc --build && npm run build -w @dddforum/frontend --if-present",
+    "start:dev": "concurrently -n backend,frontend -c blue,green \"npm run start:dev --workspace=@dddforum/backend\" \"npm run start:dev --workspace=@dddforum/frontend\"",
     "start:dev:back": "npm run start:dev --workspace=@dddforum/backend",
     "start:dev:front": "npm run start:dev --workspace=@dddforum/frontend",
     "test:e2e:back": "npm run test:e2e --workspace=@dddforum/backend",
