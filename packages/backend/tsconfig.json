@@ -1,9 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["node", "jest", "jest-cucumber", "@faker-js/faker"]
+    "types": ["node", "jest", "jest-cucumber", "@faker-js/faker"],
+    "composite": true
   },
   "references": [{ "path": "../shared" }],
   "include": ["./src"]
