@@ -10,14 +10,17 @@
     "packages/frontend"
   ],
   "scripts": {
-    "start": "npm start -w @dddforum/backend",
     "clean": "npm run clean --workspaces --if-present",
-    "build": "tsc --build && npm run build -w @dddforum/frontend --if-present",
-    "start:dev": "concurrently -n backend,frontend -c blue,green \"npm run start:dev --workspace=@dddforum/backend\" \"npm run start:dev --workspace=@dddforum/frontend\"",
-    "start:dev:back": "npm run start:dev --workspace=@dddforum/backend",
-    "start:dev:front": "npm run start:dev --workspace=@dddforum/frontend",
-    "test:e2e:back": "npm run test:e2e --workspace=@dddforum/backend",
-    "test:e2e:front": "npm run test:e2e --workspace=@dddforum/frontend"
+    "start": "npm start -w @dddforum/backend",
+    "build": "npm run build:shared && npm run build:back && npm run build:front",
+    "build:shared": "npm run build -w @dddforum/shared",
+    "build:front": "npm run build -w @dddforum/frontend",
+    "build:back": "npm run build -w @dddforum/backend",
+    "start:dev": "concurrently -n backend,frontend -c blue,green \"npm run start:dev -w @dddforum/backend\" \"npm run start:dev -w @dddforum/frontend\"",
+    "start:dev:back": "npm run start:dev -w @dddforum/backend",
+    "start:dev:front": "npm run start:dev -w @dddforum/frontend",
+    "test:e2e:back": "npm run test:e2e -w @dddforum/backend",
+    "test:e2e:front": "npm run test:e2e -w @dddforum/frontend"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
