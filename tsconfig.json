@@ -1,16 +1,17 @@
 {
-  "files": [],
-  "references": [
-    { "path": "packages/shared" },
-    { "path": "packages/backend" }
-  ],
   "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "types": ["node", "jest"],
     "strict": true,
     "esModuleInterop": true,
-    "types": ["node"],
-    "resolveJsonModule": true,
-    "declaration": true,
-    "declarationMap": true,
-    "skipLibCheck": true
-  }
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.infra.ts",
+    "**/*.test.ts",
+    "**/*.e2e.ts"
+  ]
 }
