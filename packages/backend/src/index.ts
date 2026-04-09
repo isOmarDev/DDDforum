@@ -189,11 +189,9 @@ app.get('/posts', async (req: Request, res: Response) => {
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-prisma.post
-  .findMany({})
-  .then((posts) => console.log(posts))
-  .catch((err) => console.log(err));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+export { app };
