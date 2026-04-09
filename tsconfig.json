@@ -1,14 +1,8 @@
 {
   "compilerOptions": {
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "jest-cucumber"],
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true
-  },
-  "exclude": [
-    "**/*.spec.ts",
-    "**/*.infra.ts",
-    "**/*.test.ts",
-    "**/*.e2e.ts"
-  ]
+  }
 }
