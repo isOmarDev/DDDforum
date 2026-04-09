@@ -3,7 +3,11 @@ import { defineFeature, loadFeature } from 'jest-cucumber';
 import request, { type Response } from 'supertest';
 
 import { app } from '../../src';
-import { resetDatabase } from '../fixtures';
+import {
+  CreateUserInputBuilder,
+  type CreateUserInput,
+  resetDatabase,
+} from '../fixtures';
 
 const feature = loadFeature(
   path.join(__dirname, '../../../shared/tests/features/registration.feature'),
@@ -25,9 +29,7 @@ defineFeature(feature, (test) => {
     let addEmailToListResponse: Response;
 
     given('I am a new user', () => {
-      createUserInput = new createUserInputBuilder()
-        .withAllRandomDetails()
-        .build();
+      createUserInput = new CreateUserInputBuilder().build();
     });
 
     when(
@@ -44,7 +46,7 @@ defineFeature(feature, (test) => {
     );
 
     then('I should be granted access to my account', () => {
-      expect(createUserResponse.succes).toBeTruthy();
+      expect(createUserResponse.success).toBeTruthy();
       expect(createUserResponse.error).toBeUndefined();
       expect(createUserResponse.status).toBe(201);
       expect(createUserResponse.body.id).toBeDefined();
@@ -56,7 +58,7 @@ defineFeature(feature, (test) => {
 
     and('I should expect to receive marketing emails', () => {
       expect(addEmailToListResponse.status).toBe(201);
-      expect(addEmailToListResponse.succes).toBeTruthy();
+      expect(addEmailToListResponse.success).toBeTruthy();
     });
   });
 
