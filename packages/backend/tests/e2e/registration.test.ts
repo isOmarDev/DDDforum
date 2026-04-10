@@ -2,7 +2,7 @@ import path from 'path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import request, { type Response } from 'supertest';
 
-import { app } from '../../src';
+import { app, Errors } from '../../src';
 import {
   CreateUserInputBuilder,
   type CreateUserInput,
@@ -24,30 +24,28 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    let createUserInput: CreateUserInput;
+    let user: CreateUserInput;
     let createUserResponse: Omit<Response, 'body'> & {
       body: {
         error?: string;
-        data?: { id: string } & typeof createUserInput;
+        data?: { id: string } & typeof user;
         success: boolean;
       };
     };
     let addEmailToListResponse: Response;
 
     given('I am a new user', () => {
-      createUserInput = new CreateUserInputBuilder().build();
+      user = new CreateUserInputBuilder().build();
     });
 
     when(
       'I register with valid account details accepting marketing emails',
       async () => {
-        createUserResponse = await request(app)
-          .post('/users/new')
-          .send(createUserInput);
+        createUserResponse = await request(app).post('/users').send(user);
 
         addEmailToListResponse = await request(app)
-          .post('/marketing/new')
-          .send(createUserInput.email);
+          .post('/marketing')
+          .send({ email: user.email });
       },
     );
 
@@ -58,10 +56,10 @@ defineFeature(feature, (test) => {
       expect(success).toBeTruthy();
       expect(error).toBeUndefined();
       expect(data!.id).toBeDefined();
-      expect(data!.email).toBe(createUserInput.email);
-      expect(data!.firstName).toBe(createUserInput.firstName);
-      expect(data!.lastName).toBe(createUserInput.lastName);
-      expect(data!.username).toBe(createUserInput.username);
+      expect(data!.email).toBe(user.email);
+      expect(data!.firstName).toBe(user.firstName);
+      expect(data!.lastName).toBe(user.lastName);
+      expect(data!.username).toBe(user.username);
     });
 
     and('I should expect to receive marketing emails', () => {
@@ -76,14 +74,38 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    given('I am a new user', () => {});
+    let user: CreateUserInput;
+    let createUserResponse: Omit<Response, 'body'> & {
+      body: {
+        error?: string;
+        data?: { id: string } & typeof user;
+        success: boolean;
+      };
+    };
+
+    given('I am a new user', () => {
+      user = new CreateUserInputBuilder().build();
+    });
 
     when(
       'I register with valid account details declining marketing emails',
-      () => {},
+      async () => {
+        createUserResponse = await request(app).post('/users').send(user);
+      },
     );
 
-    then('I should be granted access to my account', () => {});
+    then('I should be granted access to my account', () => {
+      const { data, success, error } = createUserResponse.body;
+
+      expect(createUserResponse.status).toBe(201);
+      expect(success).toBeTruthy();
+      expect(error).toBeUndefined();
+      expect(data!.id).toBeDefined();
+      expect(data!.email).toBe(user.email);
+      expect(data!.firstName).toBe(user.firstName);
+      expect(data!.lastName).toBe(user.lastName);
+      expect(data!.username).toBe(user.username);
+    });
 
     and('I should not expect to receive marketing emails', () => {});
   });
@@ -94,16 +116,45 @@ defineFeature(feature, (test) => {
     then,
     and,
   }) => {
-    given('I am a new user', () => {});
+    let user: Partial<CreateUserInput>;
+    let response: Omit<Response, 'body'> & {
+      body: {
+        error?: string;
+        data?: { id: string } & typeof user;
+        success: boolean;
+      };
+    };
 
-    when('I register with invalid account details', () => {});
+    given('I am a new user', () => {
+      const newUser = new CreateUserInputBuilder().build();
+      user = {
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+      };
+    });
 
-    then(
-      'I should see an error notifying me that my input is invalid',
-      () => {},
-    );
+    when('I register with invalid account details', async () => {
+      response = await request(app).post('/users').send(user);
+    });
 
-    and('I should not have been sent access to account details', () => {});
+    then('I should see an error notifying me that my input is invalid', () => {
+      const { data, success, error } = response.body;
+
+      expect(response.status).toBe(400);
+      expect(success).toBeFalsy();
+      expect(error).toBe(Errors.ValidationError);
+      expect(data).toBeUndefined();
+    });
+
+    and('I should not have been sent access to account details', () => {
+      const { data, success, error } = response.body;
+
+      expect(response.status).toBe(400);
+      expect(success).toBeFalsy();
+      expect(error).toBe(Errors.ValidationError);
+      expect(data).toBeUndefined();
+    });
   });
 
   test('Account already created with email', ({ given, when, then, and }) => {
