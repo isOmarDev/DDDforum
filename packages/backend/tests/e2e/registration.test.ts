@@ -25,7 +25,13 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     let createUserInput: CreateUserInput;
-    let createUserResponse: Response;
+    let createUserResponse: Omit<Response, 'body'> & {
+      body: {
+        error?: string;
+        data?: { id: string } & typeof createUserInput;
+        success: boolean;
+      };
+    };
     let addEmailToListResponse: Response;
 
     given('I am a new user', () => {
@@ -36,7 +42,7 @@ defineFeature(feature, (test) => {
       'I register with valid account details accepting marketing emails',
       async () => {
         createUserResponse = await request(app)
-          .post('/user/new')
+          .post('/users/new')
           .send(createUserInput);
 
         addEmailToListResponse = await request(app)
@@ -46,19 +52,21 @@ defineFeature(feature, (test) => {
     );
 
     then('I should be granted access to my account', () => {
-      expect(createUserResponse.success).toBeTruthy();
-      expect(createUserResponse.error).toBeUndefined();
+      const { data, success, error } = createUserResponse.body;
+
       expect(createUserResponse.status).toBe(201);
-      expect(createUserResponse.body.id).toBeDefined();
-      expect(createUserResponse.body.email).toBe(createUserInput.email);
-      expect(createUserResponse.body.firstName.toBe(createUserInput.firstName));
-      expect(createUserResponse.body.lastName.toBe(createUserInput.lastName));
-      expect(createUserResponse.body.username.toBe(createUserInput.username));
+      expect(success).toBeTruthy();
+      expect(error).toBeUndefined();
+      expect(data!.id).toBeDefined();
+      expect(data!.email).toBe(createUserInput.email);
+      expect(data!.firstName).toBe(createUserInput.firstName);
+      expect(data!.lastName).toBe(createUserInput.lastName);
+      expect(data!.username).toBe(createUserInput.username);
     });
 
     and('I should expect to receive marketing emails', () => {
       expect(addEmailToListResponse.status).toBe(201);
-      expect(addEmailToListResponse.success).toBeTruthy();
+      expect(addEmailToListResponse.body.success).toBeTruthy();
     });
   });
 
