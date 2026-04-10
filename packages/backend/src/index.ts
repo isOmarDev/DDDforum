@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const Errors = {
+export const Errors = {
   UsernameAlreadyTaken: 'UserNameAlreadyTaken',
   EmailAlreadyInUse: 'EmailAlreadyInUse',
   ValidationError: 'ValidationError',
@@ -43,7 +43,7 @@ function parseUserForResponse(user: User) {
 }
 
 // Create a new user
-app.post('/users/new', async (req: Request, res: Response) => {
+app.post('/users', async (req: Request, res: Response) => {
   try {
     const keyIsMissing = isMissingKeys(req.body, [
       'email',
@@ -134,7 +134,33 @@ app.get('/users', async (req: Request, res: Response) => {
     return res.status(200).json({
       error: undefined,
       data: parseUserForResponse(user),
-      succes: true,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: Errors.ServerError,
+      data: undefined,
+      success: false,
+    });
+  }
+});
+
+app.post('/marketing', async (req: Request, res: Response) => {
+  try {
+    const areKeysMissing = isMissingKeys(req.body, ['email']);
+
+    if (areKeysMissing) {
+      return res.status(400).json({
+        error: Errors.ValidationError,
+        data: undefined,
+        success: false,
+      });
+    }
+
+    return res.status(201).json({
+      error: undefined,
+      data: true,
+      success: true,
     });
   } catch (error) {
     return res.status(500).json({
