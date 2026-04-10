@@ -22,7 +22,7 @@ model User {
 model Member {
   id Int @id @default(autoincrement())
 
-  user     User      @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   Int       @unique // relation scalar field (used in the `@relation` attribute above)
   posts    Post[]
   votes    Vote[]
