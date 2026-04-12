@@ -224,19 +224,65 @@ defineFeature(feature, (test) => {
   });
 
   test('Username already taken', ({ given, when, then, and }) => {
+    let users: CreateUserInput[];
+    let responses: Array<
+      Omit<Response, 'body'> & {
+        body: {
+          error?: string;
+          data?: { id: string } & CreateUserInput;
+          success: boolean;
+        };
+      }
+    >;
+
     given(
       'a set of users have already created their accounts with valid details',
-      (table) => {},
+      async (table: Omit<CreateUserInput, 'password'>[]) => {
+        await Promise.all(
+          table.map((row) => {
+            return new UserBuilder()
+              .withEmail(row.email)
+              .withUsername(row.username)
+              .withFirstName(row.firstName)
+              .withLastName(row.lastName)
+              .build();
+          }),
+        );
+      },
     );
 
     when(
       'new users attempt to register with already taken usernames',
-      (table) => {},
+      async (table: Omit<CreateUserInput, 'password'>[]) => {
+        users = table.map((row) =>
+          new CreateUserInputBuilder()
+            .withEmail(row.email)
+            .withUsername(row.username)
+            .withFirstName(row.firstName)
+            .withLastName(row.lastName)
+            .build(),
+        );
+
+        responses = await Promise.all(
+          users.map((user) => {
+            return request(app).post('/users').send(user);
+          }),
+        );
+      },
     );
 
     then(
       'they see an error notifying them that the username has already been taken',
-      () => {},
+      () => {
+        responses.forEach((response) => {
+          const { data, success, error } = response.body;
+
+          expect(response.status).toBe(409);
+          expect(success).toBeFalsy();
+          expect(error).toBe(Errors.UsernameAlreadyTaken);
+          expect(data).toBeUndefined();
+        });
+      },
     );
 
     and('they should not have been sent access to account details', () => {});
