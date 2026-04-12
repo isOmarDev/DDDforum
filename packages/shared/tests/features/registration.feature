@@ -30,6 +30,10 @@ Feature: Registration
       | Alice     | Smith    | alice@example.com |
       | David     | Brown    | david@example.com |
     When new users attempt to register with those emails
+      | firstName | lastName | username       | email             |
+      | Bill      | Bob      | the_chosenone1 | john@example.com  |
+      | Max       | Samson   | !chillblinton2 | alice@example.com |
+      | Will      | Steff    | greenday@3     | david@example.com |
     Then they should see an error notifying them that the account already exists
     And they should not have been sent access to account details
 
