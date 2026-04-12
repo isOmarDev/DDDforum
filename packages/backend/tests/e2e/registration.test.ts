@@ -7,6 +7,7 @@ import {
   CreateUserInputBuilder,
   type CreateUserInput,
   resetDatabase,
+  UserBuilder,
 } from '../fixtures';
 
 const feature = loadFeature(
@@ -25,7 +26,7 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     let user: CreateUserInput;
-    let createUserResponse: Omit<Response, 'body'> & {
+    let response: Omit<Response, 'body'> & {
       body: {
         error?: string;
         data?: { id: string } & typeof user;
@@ -41,7 +42,7 @@ defineFeature(feature, (test) => {
     when(
       'I register with valid account details accepting marketing emails',
       async () => {
-        createUserResponse = await request(app).post('/users').send(user);
+        response = await request(app).post('/users').send(user);
 
         addEmailToListResponse = await request(app)
           .post('/marketing')
@@ -50,9 +51,9 @@ defineFeature(feature, (test) => {
     );
 
     then('I should be granted access to my account', () => {
-      const { data, success, error } = createUserResponse.body;
+      const { data, success, error } = response.body;
 
-      expect(createUserResponse.status).toBe(201);
+      expect(response.status).toBe(201);
       expect(success).toBeTruthy();
       expect(error).toBeUndefined();
       expect(data!.id).toBeDefined();
@@ -158,13 +159,65 @@ defineFeature(feature, (test) => {
   });
 
   test('Account already created with email', ({ given, when, then, and }) => {
-    given('a set of users already created accounts', (table) => {});
+    let users: CreateUserInput[];
+    let responses: Array<
+      Omit<Response, 'body'> & {
+        body: {
+          error?: string;
+          data?: { id: string } & CreateUserInput;
+          success: boolean;
+        };
+      }
+    >;
 
-    when('new users attempt to register with those emails', () => {});
+    given(
+      'a set of users already created accounts',
+      async (table: Omit<CreateUserInput, 'password'>[]) => {
+        await Promise.all(
+          table.map((row) => {
+            return new UserBuilder()
+              .withEmail(row.email)
+              .withUsername(row.username)
+              .withFirstName(row.firstName)
+              .withLastName(row.lastName)
+              .build();
+          }),
+        );
+      },
+    );
+
+    when(
+      'new users attempt to register with those emails',
+      async (table: Omit<CreateUserInput, 'password'>[]) => {
+        users = table.map((row) =>
+          new CreateUserInputBuilder()
+            .withEmail(row.email)
+            .withUsername(row.username)
+            .withFirstName(row.firstName)
+            .withLastName(row.lastName)
+            .build(),
+        );
+
+        responses = await Promise.all(
+          users.map((user) => {
+            return request(app).post('/users').send(user);
+          }),
+        );
+      },
+    );
 
     then(
       'they should see an error notifying them that the account already exists',
-      () => {},
+      () => {
+        responses.forEach((response) => {
+          const { data, success, error } = response.body;
+
+          expect(response.status).toBe(409);
+          expect(success).toBeFalsy();
+          expect(error).toBe(Errors.EmailAlreadyInUse);
+          expect(data).toBeUndefined();
+        });
+      },
     );
 
     and('they should not have been sent access to account details', () => {});
