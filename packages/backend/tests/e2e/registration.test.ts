@@ -1,20 +1,28 @@
 import path from 'path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
-import request, { type Response } from 'supertest';
+import request from 'supertest';
 
-import { app, Errors } from '../../src';
-import {
-  CreateUserInputBuilder,
-  type CreateUserInput,
-  resetDatabase,
-  UserBuilder,
-} from '../fixtures';
+import { Response } from '../types';
+import { type CreateUserInput, resetDatabase, UserBuilder } from '../fixtures';
+import server from '../../src/bootstrap';
+import { ErrorException } from '../../src/shared/errors/error-exception-types';
+import { CreateUserInputBuilder } from '../../../shared/tests/builders/create-user-input-builder';
+import { CreateUserResponse } from '../../../shared/src/types/users';
+import { AddEmailToListResponse } from '../../../shared/src/types/marketing';
 
 const feature = loadFeature(
   path.join(__dirname, '../../../shared/tests/features/registration.feature'),
 );
 
 defineFeature(feature, (test) => {
+  const app = server.app;
+
+  type UserResponse = Response<CreateUserResponse>;
+
+  let response: UserResponse;
+  let usersResponses: UserResponse[];
+  let addEmailToListResponse: Response<AddEmailToListResponse>;
+
   afterEach(async () => {
     await resetDatabase();
   });
@@ -26,14 +34,6 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     let user: CreateUserInput;
-    let response: Omit<Response, 'body'> & {
-      body: {
-        error?: string;
-        data?: { id: string } & typeof user;
-        success: boolean;
-      };
-    };
-    let addEmailToListResponse: Response;
 
     given('I am a new user', () => {
       user = new CreateUserInputBuilder().build();
@@ -56,15 +56,18 @@ defineFeature(feature, (test) => {
       expect(response.status).toBe(201);
       expect(success).toBeTruthy();
       expect(error).toBeUndefined();
-      expect(data!.id).toBeDefined();
-      expect(data!.email).toBe(user.email);
-      expect(data!.firstName).toBe(user.firstName);
-      expect(data!.lastName).toBe(user.lastName);
-      expect(data!.username).toBe(user.username);
+      expect(data!.user.id).toBeDefined();
+      expect(data!.user.email).toBe(user.email);
+      expect(data!.user.firstName).toBe(user.firstName);
+      expect(data!.user.lastName).toBe(user.lastName);
+      expect(data!.user.username).toBe(user.username);
     });
 
     and('I should expect to receive marketing emails', () => {
       expect(addEmailToListResponse.status).toBe(201);
+      expect(addEmailToListResponse.body.data?.subscription.email).toBe(
+        user.email,
+      );
       expect(addEmailToListResponse.body.success).toBeTruthy();
     });
   });
@@ -76,13 +79,6 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     let user: CreateUserInput;
-    let createUserResponse: Omit<Response, 'body'> & {
-      body: {
-        error?: string;
-        data?: { id: string } & typeof user;
-        success: boolean;
-      };
-    };
 
     given('I am a new user', () => {
       user = new CreateUserInputBuilder().build();
@@ -91,21 +87,21 @@ defineFeature(feature, (test) => {
     when(
       'I register with valid account details declining marketing emails',
       async () => {
-        createUserResponse = await request(app).post('/users').send(user);
+        response = await request(app).post('/users').send(user);
       },
     );
 
     then('I should be granted access to my account', () => {
-      const { data, success, error } = createUserResponse.body;
+      const { data, success, error } = response.body;
 
-      expect(createUserResponse.status).toBe(201);
+      expect(response.status).toBe(201);
       expect(success).toBeTruthy();
       expect(error).toBeUndefined();
-      expect(data!.id).toBeDefined();
-      expect(data!.email).toBe(user.email);
-      expect(data!.firstName).toBe(user.firstName);
-      expect(data!.lastName).toBe(user.lastName);
-      expect(data!.username).toBe(user.username);
+      expect(data!.user.id).toBeDefined();
+      expect(data!.user.email).toBe(user.email);
+      expect(data!.user.firstName).toBe(user.firstName);
+      expect(data!.user.lastName).toBe(user.lastName);
+      expect(data!.user.username).toBe(user.username);
     });
 
     and('I should not expect to receive marketing emails', () => {});
@@ -118,13 +114,6 @@ defineFeature(feature, (test) => {
     and,
   }) => {
     let user: Partial<CreateUserInput>;
-    let response: Omit<Response, 'body'> & {
-      body: {
-        error?: string;
-        data?: { id: string } & typeof user;
-        success: boolean;
-      };
-    };
 
     given('I am a new user', () => {
       const newUser = new CreateUserInputBuilder().build();
@@ -144,7 +133,7 @@ defineFeature(feature, (test) => {
 
       expect(response.status).toBe(400);
       expect(success).toBeFalsy();
-      expect(error).toBe(Errors.ValidationError);
+      expect(error?.code).toBe(ErrorException.ValidationError);
       expect(data).toBeUndefined();
     });
 
@@ -153,22 +142,13 @@ defineFeature(feature, (test) => {
 
       expect(response.status).toBe(400);
       expect(success).toBeFalsy();
-      expect(error).toBe(Errors.ValidationError);
+      expect(error?.code).toBe(ErrorException.ValidationError);
       expect(data).toBeUndefined();
     });
   });
 
   test('Account already created with email', ({ given, when, then, and }) => {
     let users: CreateUserInput[];
-    let responses: Array<
-      Omit<Response, 'body'> & {
-        body: {
-          error?: string;
-          data?: { id: string } & CreateUserInput;
-          success: boolean;
-        };
-      }
-    >;
 
     given(
       'a set of users already created accounts',
@@ -198,7 +178,7 @@ defineFeature(feature, (test) => {
             .build(),
         );
 
-        responses = await Promise.all(
+        usersResponses = await Promise.all(
           users.map((user) => {
             return request(app).post('/users').send(user);
           }),
@@ -209,12 +189,12 @@ defineFeature(feature, (test) => {
     then(
       'they should see an error notifying them that the account already exists',
       () => {
-        responses.forEach((response) => {
+        usersResponses.forEach((response) => {
           const { data, success, error } = response.body;
 
           expect(response.status).toBe(409);
           expect(success).toBeFalsy();
-          expect(error).toBe(Errors.EmailAlreadyInUse);
+          expect(error?.code).toBe(ErrorException.EmailAlreadyInUse);
           expect(data).toBeUndefined();
         });
       },
@@ -225,15 +205,6 @@ defineFeature(feature, (test) => {
 
   test('Username already taken', ({ given, when, then, and }) => {
     let users: CreateUserInput[];
-    let responses: Array<
-      Omit<Response, 'body'> & {
-        body: {
-          error?: string;
-          data?: { id: string } & CreateUserInput;
-          success: boolean;
-        };
-      }
-    >;
 
     given(
       'a set of users have already created their accounts with valid details',
@@ -263,7 +234,7 @@ defineFeature(feature, (test) => {
             .build(),
         );
 
-        responses = await Promise.all(
+        usersResponses = await Promise.all(
           users.map((user) => {
             return request(app).post('/users').send(user);
           }),
@@ -274,12 +245,12 @@ defineFeature(feature, (test) => {
     then(
       'they see an error notifying them that the username has already been taken',
       () => {
-        responses.forEach((response) => {
+        usersResponses.forEach((response) => {
           const { data, success, error } = response.body;
 
           expect(response.status).toBe(409);
           expect(success).toBeFalsy();
-          expect(error).toBe(Errors.UsernameAlreadyTaken);
+          expect(error?.code).toBe(ErrorException.UsernameAlreadyTaken);
           expect(data).toBeUndefined();
         });
       },
