@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { prisma } from '../../../src/database';
-import { CreateUserInput } from './create-user-input-builder';
+import { CreateUserInput } from '../../../../shared/tests/builders/create-user-input-builder';
 
 export class UserBuilder {
   private props: CreateUserInput;
