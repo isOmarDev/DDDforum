@@ -1,27 +1,43 @@
 import path from 'path';
+import { Express } from 'express';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import request from 'supertest';
 
 import { Response } from '../types';
 import { type CreateUserInput, resetDatabase, UserBuilder } from '../fixtures';
-import server from '../../src/bootstrap';
+
 import { ErrorException } from '../../src/shared/errors/error-exception-types';
 import { CreateUserInputBuilder } from '../../../shared/tests/builders/create-user-input-builder';
 import { CreateUserResponse } from '../../../shared/src/types/users';
 import { AddEmailToListResponse } from '../../../shared/src/types/marketing';
+import { CompositionRoot } from '../../src/shared/composition-root';
+import { Config } from '../../src/shared/config';
+import { Database } from '../../src/shared/database';
 
 const feature = loadFeature(
   path.join(__dirname, '../../../shared/tests/features/registration.feature'),
 );
 
 defineFeature(feature, (test) => {
-  const app = server.app;
+  let compositionRoot: CompositionRoot;
+  let app: Express;
+  let db: Database;
+
+  const config: Config = new Config('test:e2e');
 
   type UserResponse = Response<CreateUserResponse>;
 
   let response: UserResponse;
   let usersResponses: UserResponse[];
   let addEmailToListResponse: Response<AddEmailToListResponse>;
+
+  beforeAll(async () => {
+    compositionRoot = CompositionRoot.createCompositionRoot(config);
+    const server = compositionRoot.getWebServer();
+    app = server.getApp();
+    db = compositionRoot.getDb();
+    await db.connect();
+  });
 
   afterEach(async () => {
     await resetDatabase();
