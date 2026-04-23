@@ -1,14 +1,18 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
 import { UserService } from '../services/user-service';
 import { CreateUserDTO } from '../dtos/userDTO';
-import { parseUserForResponse } from '../shared/utils';
+import ErrorExceptionHandler from '../shared/errors/error-exception-handler';
 
 export class UserController {
   private readonly router: Router;
 
-  constructor(private userService: UserService) {
+  constructor(
+    private userService: UserService,
+    private errorExceptionHandler: typeof ErrorExceptionHandler.handle,
+  ) {
     this.router = express.Router();
     this.setupRoutes();
+    this.setupErrorExceptionHandler();
   }
 
   public getRouter() {
@@ -20,6 +24,10 @@ export class UserController {
     this.router.get('/', this.getUsers.bind(this));
   }
 
+  private setupErrorExceptionHandler() {
+    this.router.use(this.errorExceptionHandler);
+  }
+
   public async createUser(req: Request, res: Response, next: NextFunction) {
     try {
       const dto = CreateUserDTO.validateRequest(req.body);
@@ -28,7 +36,7 @@ export class UserController {
 
       return res.status(201).json({
         error: undefined,
-        data: { user: parseUserForResponse(user) },
+        data: { user },
         success: true,
       });
     } catch (error) {
@@ -44,7 +52,7 @@ export class UserController {
 
       return res.status(200).json({
         error: undefined,
-        data: { users: users.map(parseUserForResponse) },
+        data: { users },
         success: true,
       });
     } catch (error) {
