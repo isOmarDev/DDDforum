@@ -1,4 +1,4 @@
-import { prisma } from '../src/database';
+import { database } from '../src/shared/bootstrap';
 import { resetDatabase } from './fixtures';
 
 beforeAll(async () => {
@@ -8,5 +8,5 @@ beforeAll(async () => {
 
 afterAll(async () => {
   // Disconnect Prisma so Jest can exit cleanly
-  await prisma.$disconnect();
+  await database.$disconnect();
 });
