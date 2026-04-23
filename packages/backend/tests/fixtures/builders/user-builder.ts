@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { prisma } from '../../../src/database';
+
+import { database } from '../../../src/shared/bootstrap';
 import { CreateUserInput } from '../../../../shared/tests/builders/create-user-input-builder';
 
 export class UserBuilder {
@@ -44,7 +45,7 @@ export class UserBuilder {
   }
 
   public async build() {
-    const user = await prisma.user.create({ data: this.props });
+    const user = await database.user.create({ data: this.props });
     const { password, ...restUser } = user;
     return restUser;
   }
