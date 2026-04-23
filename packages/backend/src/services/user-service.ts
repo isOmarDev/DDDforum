@@ -23,11 +23,15 @@ export class UserService {
       throw new UsernameAlreadyTakenException();
     }
 
-    const user = await this.userRepo.create(dto);
+    const { password, ...user } = await this.userRepo.create(dto);
     return user;
   }
 
   public async getUsers(filters?: { email?: string }) {
-    return await this.userRepo.findAll(filters);
+    const users = await this.userRepo.findAll(filters);
+    return users.map((user) => {
+      const { password, ...restUser } = user;
+      return restUser;
+    });
   }
 }
