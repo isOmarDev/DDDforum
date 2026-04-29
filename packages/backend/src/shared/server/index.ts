@@ -3,6 +3,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 
 import type { Controllers } from '../composition-root';
+import GlobalErrorHandler from '../errors/error-exception-handler';
 
 type WebServerConfig = {
   port: number;
@@ -22,6 +23,7 @@ class WebServer {
     this._app = express();
     this.addMiddlewares();
     this.registerRouters();
+    this.setupGlobalErrorsHandler();
   }
 
   public getApp() {
@@ -40,6 +42,10 @@ class WebServer {
     this._app.use('/users', userController.getRouter());
     this._app.use('/posts', postController.getRouter());
     this._app.use('/marketing', marketingController.getRouter());
+  }
+
+  private setupGlobalErrorsHandler() {
+    this._app.use(GlobalErrorHandler.handle);
   }
 
   public async start(): Promise<void> {
