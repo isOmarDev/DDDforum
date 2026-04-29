@@ -3,16 +3,16 @@ import { Express } from 'express';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import request from 'supertest';
 
-import { Response } from '../types';
+import type { Response } from '../types';
 import { type CreateUserInput, resetDatabase, UserBuilder } from '../fixtures';
-
 import { ErrorException } from '../../src/shared/errors/error-exception-types';
-import { CreateUserInputBuilder } from '../../../shared/tests/builders/create-user-input-builder';
-import { CreateUserResponse } from '../../../shared/src/types/users';
-import { AddEmailToListResponse } from '../../../shared/src/types/marketing';
 import { CompositionRoot } from '../../src/shared/composition-root';
 import { Config } from '../../src/shared/config';
 import { Database } from '../../src/shared/database';
+import { userErrorCodes } from '../../src/modules/user';
+import { CreateUserInputBuilder } from '../../../shared/tests/builders/create-user-input-builder';
+import type { CreateUserResponse } from '@dddforum/shared/types/users';
+import type { AddEmailToListResponse } from '@dddforum/shared/types/marketing';
 
 const feature = loadFeature(
   path.join(__dirname, '../../../shared/tests/features/registration.feature'),
@@ -210,7 +210,7 @@ defineFeature(feature, (test) => {
 
           expect(response.status).toBe(409);
           expect(success).toBeFalsy();
-          expect(error?.code).toBe(ErrorException.EmailAlreadyInUse);
+          expect(error?.code).toBe(userErrorCodes.EmailAlreadyInUse);
           expect(data).toBeUndefined();
         });
       },
@@ -266,7 +266,7 @@ defineFeature(feature, (test) => {
 
           expect(response.status).toBe(409);
           expect(success).toBeFalsy();
-          expect(error?.code).toBe(ErrorException.UsernameAlreadyTaken);
+          expect(error?.code).toBe(userErrorCodes.UsernameAlreadyTaken);
           expect(data).toBeUndefined();
         });
       },
