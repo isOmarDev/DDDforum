@@ -16,3 +16,4 @@ export type CreateUserErrors =
   | EmailAlreadyInUseError
   | GenericErrors;
 export type CreateUserResponse = ApiResponse<{ user: User }, CreateUserErrors>;
+export type UserResponse = CreateUserResponse;
