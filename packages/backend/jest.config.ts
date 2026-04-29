@@ -8,6 +8,14 @@ const config: Config = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        diagnostics: false,
+      },
+    ],
+  },
 };
 
 export default config;
