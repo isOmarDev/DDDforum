@@ -9,3 +9,5 @@ export type AddEmailToListResponse = ApiResponse<
   { subscription: EmailSubscriber },
   AddEmailToListErrors
 >;
+
+export type MarketingResponse = AddEmailToListResponse;
