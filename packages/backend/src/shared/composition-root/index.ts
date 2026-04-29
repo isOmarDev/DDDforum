@@ -1,20 +1,24 @@
 import WebServer from '../server';
 import { Database } from '../database';
 import { Config } from '../config';
-import ErrorExceptionHandler from '../errors/error-exception-handler';
-
-import { UserRepo, PostRepo } from '../../persistence';
-import {
-  UserService,
-  MarketingService,
-  PostService,
-  FakeMailService,
-} from '../../services';
 import {
   UserController,
-  MarketingController,
+  UserRepo,
+  UserService,
+  UserErrors,
+} from '../../modules/user';
+import {
   PostController,
-} from '../../controllers';
+  PostRepo,
+  PostService,
+  PostErrors,
+} from '../../modules/post';
+import {
+  MarketingController,
+  MarketingService,
+  MarketingErrors,
+} from '../../modules/marketing';
+import { FakeMailService } from '../../modules/notification';
 
 export type Controllers = {
   userController: UserController;
@@ -26,7 +30,6 @@ export class CompositionRoot {
   private static instance: CompositionRoot | null = null;
   private webServer: WebServer;
   private db: Database;
-  private errorExceptionHandler: typeof ErrorExceptionHandler.handle;
   private userService: UserService;
   private postService: PostService;
   private marketingService: MarketingService;
@@ -34,7 +37,6 @@ export class CompositionRoot {
 
   private constructor(private config: Config) {
     this.db = this.createDb();
-    this.errorExceptionHandler = ErrorExceptionHandler.handle;
     this.userService = this.createUsersService();
     this.postService = this.createPostService();
     this.marketingService = this.createMarketingService();
@@ -69,10 +71,6 @@ export class CompositionRoot {
     return this.db;
   }
 
-  private getErrorExceptionHandler() {
-    return this.errorExceptionHandler;
-  }
-
   private createUsersService() {
     const userRepo = new UserRepo(this.db.getClient());
     return new UserService(userRepo);
@@ -101,25 +99,15 @@ export class CompositionRoot {
   }
 
   private createControllers() {
-    const errorExceptionHandler = this.getErrorExceptionHandler();
-
     const userService = this.getUserService();
     const postService = this.getPostService();
     const marketingService = this.getMarketingService();
 
-    const userController = new UserController(
-      userService,
-      errorExceptionHandler,
-    );
-
-    const postController = new PostController(
-      postService,
-      errorExceptionHandler,
-    );
-
+    const userController = new UserController(userService, UserErrors);
+    const postController = new PostController(postService, PostErrors);
     const marketingController = new MarketingController(
       marketingService,
-      errorExceptionHandler,
+      MarketingErrors,
     );
 
     return { userController, postController, marketingController };
