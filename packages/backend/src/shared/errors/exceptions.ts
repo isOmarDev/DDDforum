@@ -23,21 +23,3 @@ export class InvalidRequestQueryException extends Error {
     );
   }
 }
-
-export class EmailAlreadyInUseException extends Error {
-  constructor() {
-    super(`Email is already in use.`);
-  }
-}
-
-export class UsernameAlreadyTakenException extends Error {
-  constructor() {
-    super(`Username is already taken.`);
-  }
-}
-
-export class EmailNotAddedToMailListException extends Error {
-  constructor(email: string) {
-    super(`Failed to add email "${email}" to mailing list.`);
-  }
-}
