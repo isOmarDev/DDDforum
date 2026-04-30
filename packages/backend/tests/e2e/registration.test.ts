@@ -9,7 +9,7 @@ import { ErrorException } from '../../src/shared/errors/error-exception-types';
 import { CompositionRoot } from '../../src/shared/composition-root';
 import { Config } from '../../src/shared/config';
 import { Database } from '../../src/shared/database';
-import { userErrorCodes } from '../../src/modules/user';
+import { userErrorCodes } from '../../src/modules/user/user-errors';
 import { CreateUserInputBuilder } from '../../../shared/tests/builders/create-user-input-builder';
 import type { CreateUserResponse } from '@dddforum/shared/types/users';
 import type { AddEmailToListResponse } from '@dddforum/shared/types/marketing';
