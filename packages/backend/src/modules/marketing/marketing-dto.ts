@@ -1,5 +1,5 @@
-import { InvalidRequestBodyException } from '../shared/errors/exceptions';
-import { isMissingKeys } from '../shared/utils/utils';
+import { InvalidRequestBodyException } from '../../shared/errors/exceptions';
+import { isMissingKeys } from '../../shared/utils/utils';
 
 export class AddEmailToListDTO {
   private constructor(public email: string) {}

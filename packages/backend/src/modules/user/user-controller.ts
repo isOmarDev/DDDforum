@@ -1,14 +1,15 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
-import { UserService } from '../services/user-service';
-import { CreateUserDTO } from '../dtos/userDTO';
-import ErrorExceptionHandler from '../shared/errors/error-exception-handler';
+
+import { UserService } from './user-service';
+import { CreateUserDTO } from './user-dto';
+import { UserErrors } from './user-errors';
 
 export class UserController {
   private readonly router: Router;
 
   constructor(
     private userService: UserService,
-    private errorExceptionHandler: typeof ErrorExceptionHandler.handle,
+    private userErrors: typeof UserErrors,
   ) {
     this.router = express.Router();
     this.setupRoutes();
@@ -25,7 +26,7 @@ export class UserController {
   }
 
   private setupErrorExceptionHandler() {
-    this.router.use(this.errorExceptionHandler);
+    this.router.use(this.userErrors.handle);
   }
 
   public async createUser(req: Request, res: Response, next: NextFunction) {

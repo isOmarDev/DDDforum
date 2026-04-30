@@ -1,15 +1,15 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
 
-import { AddEmailToListDTO } from '../dtos/marketingDTO';
-import { MarketingService } from '../services/marketing-service';
-import ErrorExceptionHandler from '../shared/errors/error-exception-handler';
+import { AddEmailToListDTO } from './marketing-dto';
+import { MarketingService } from './marketing-service';
+import { MarketingErrors } from './marketing-errors';
 
 export class MarketingController {
   private readonly router: Router;
 
   constructor(
     private marketingService: MarketingService,
-    private errorExceptionHandler: typeof ErrorExceptionHandler.handle,
+    private marketingErrors: typeof MarketingErrors,
   ) {
     this.router = express.Router();
     this.setupRoutes();
@@ -25,7 +25,7 @@ export class MarketingController {
   }
 
   private setupErrorExceptionHandler() {
-    this.router.use(this.errorExceptionHandler);
+    this.router.use(this.marketingErrors.handle);
   }
 
   public async addEmailToList(req: Request, res: Response, next: NextFunction) {

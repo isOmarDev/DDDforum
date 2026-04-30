@@ -1,6 +1,6 @@
-import { AddEmailToListDTO } from '../dtos/marketingDTO';
-import { EmailNotAddedToMailListException } from '../shared/errors/exceptions';
-import { FakeMailService } from './fake-mail-service';
+import { FakeMailService } from '../notification/fake-mail-service';
+import { AddEmailToListDTO } from './marketing-dto';
+import { EmailNotAddedToMailListException } from './marketing-exceptions';
 
 export class MarketingService {
   constructor(private fakeMailService: FakeMailService) {}

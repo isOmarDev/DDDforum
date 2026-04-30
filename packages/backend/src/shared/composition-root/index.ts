@@ -1,45 +1,27 @@
 import WebServer from '../server';
 import { Database } from '../database';
 import { Config } from '../config';
-import ErrorExceptionHandler from '../errors/error-exception-handler';
-
-import { UserRepo, PostRepo } from '../../persistence';
-import {
-  UserService,
-  MarketingService,
-  PostService,
-  FakeMailService,
-} from '../../services';
-import {
-  UserController,
-  MarketingController,
-  PostController,
-} from '../../controllers';
-
-export type Controllers = {
-  userController: UserController;
-  postController: PostController;
-  marketingController: MarketingController;
-};
+import { UserModule } from '../../modules/user';
+import { PostModule } from '../../modules/post';
+import { MarketingModule } from '../../modules/marketing';
+import GlobalErrorHandler from '../errors/global-error-handler';
 
 export class CompositionRoot {
   private static instance: CompositionRoot | null = null;
   private webServer: WebServer;
   private db: Database;
-  private errorExceptionHandler: typeof ErrorExceptionHandler.handle;
-  private userService: UserService;
-  private postService: PostService;
-  private marketingService: MarketingService;
-  private controllers: Controllers;
+  private userModule: UserModule;
+  private postModule: PostModule;
+  private marketingModule: MarketingModule;
 
   private constructor(private config: Config) {
     this.db = this.createDb();
-    this.errorExceptionHandler = ErrorExceptionHandler.handle;
-    this.userService = this.createUsersService();
-    this.postService = this.createPostService();
-    this.marketingService = this.createMarketingService();
-    this.controllers = this.createControllers();
+    this.userModule = this.createUsersModule();
+    this.postModule = this.createPostModule();
+    this.marketingModule = this.createMarketingModule();
     this.webServer = this.createWebServer();
+    this.mountRouters();
+    this.registerGlobalErrorHandler();
   }
 
   static createCompositionRoot(config: Config) {
@@ -51,10 +33,7 @@ export class CompositionRoot {
   }
 
   private createWebServer() {
-    return new WebServer(
-      { port: 3000, env: this.config.env },
-      this.getControllers(),
-    );
+    return new WebServer({ port: 3000, env: this.config.env });
   }
 
   public getWebServer() {
@@ -69,63 +48,25 @@ export class CompositionRoot {
     return this.db;
   }
 
-  private getErrorExceptionHandler() {
-    return this.errorExceptionHandler;
+  private createUsersModule() {
+    return UserModule.build(this.db);
   }
 
-  private createUsersService() {
-    const userRepo = new UserRepo(this.db.getClient());
-    return new UserService(userRepo);
+  private createPostModule() {
+    return PostModule.build(this.db);
   }
 
-  private getUserService() {
-    return this.userService;
+  private createMarketingModule() {
+    return MarketingModule.build();
   }
 
-  private createPostService() {
-    const postRepo = new PostRepo(this.db.getClient());
-    return new PostService(postRepo);
+  private mountRouters() {
+    this.marketingModule.mountRouter(this.webServer);
+    this.userModule.mountRouter(this.webServer);
+    this.postModule.mountRouter(this.webServer);
   }
 
-  private getPostService() {
-    return this.postService;
-  }
-
-  private createMarketingService() {
-    const fakeMailService = new FakeMailService();
-    return new MarketingService(fakeMailService);
-  }
-
-  private getMarketingService() {
-    return this.marketingService;
-  }
-
-  private createControllers() {
-    const errorExceptionHandler = this.getErrorExceptionHandler();
-
-    const userService = this.getUserService();
-    const postService = this.getPostService();
-    const marketingService = this.getMarketingService();
-
-    const userController = new UserController(
-      userService,
-      errorExceptionHandler,
-    );
-
-    const postController = new PostController(
-      postService,
-      errorExceptionHandler,
-    );
-
-    const marketingController = new MarketingController(
-      marketingService,
-      errorExceptionHandler,
-    );
-
-    return { userController, postController, marketingController };
-  }
-
-  private getControllers() {
-    return this.controllers;
+  private registerGlobalErrorHandler() {
+    this.webServer.setupGlobalErrorHandler(GlobalErrorHandler.handle);
   }
 }

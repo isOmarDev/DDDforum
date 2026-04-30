@@ -1,9 +1,9 @@
-import { CreateUserDTO } from '../dtos/userDTO';
-import { UserRepo } from '../persistence/user-repo';
+import { CreateUserDTO } from './user-dto';
+import { UserRepo } from './user-repo';
 import {
   EmailAlreadyInUseException,
   UsernameAlreadyTakenException,
-} from '../shared/errors/exceptions';
+} from './user-exceptions';
 
 export class UserService {
   constructor(private userRepo: UserRepo) {}

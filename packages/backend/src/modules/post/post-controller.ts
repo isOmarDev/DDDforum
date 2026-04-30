@@ -1,13 +1,13 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
-import { PostService } from '../services/post-service';
-import ErrorExceptionHandler from '../shared/errors/error-exception-handler';
+import { PostService } from './post-service';
+import { PostErrors } from './post-errors';
 
 export class PostController {
   private readonly router: Router;
 
   constructor(
     private postService: PostService,
-    private errorExceptionHandler: typeof ErrorExceptionHandler.handle,
+    private postErrors: typeof PostErrors,
   ) {
     this.router = express.Router();
     this.setupRoutes();
@@ -23,7 +23,7 @@ export class PostController {
   }
 
   private setupErrorExceptionHandler() {
-    this.router.use(this.errorExceptionHandler);
+    this.router.use(this.postErrors.handle);
   }
 
   public async getPosts(req: Request, res: Response, next: NextFunction) {

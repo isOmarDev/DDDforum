@@ -1,5 +1,5 @@
-import { PrismaClient } from '../shared/generated/client';
-import { CreateUserInput } from '../shared/types/user';
+import { PrismaClient } from '../../shared/generated/client';
+import { CreateUserInput } from '../../shared/types/user';
 
 export class UserRepo {
   constructor(private prisma: PrismaClient) {}

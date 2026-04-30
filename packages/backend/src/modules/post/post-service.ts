@@ -1,4 +1,4 @@
-import { PostRepo } from '../persistence/post-repo';
+import { PostRepo } from './post-repo';
 
 export class PostService {
   constructor(private postRepo: PostRepo) {}
