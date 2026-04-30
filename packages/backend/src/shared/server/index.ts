@@ -1,9 +1,8 @@
 import { Server } from 'http';
-import express, { Express } from 'express';
+import express, { Express, Router } from 'express';
 import cors from 'cors';
 
-import type { Controllers } from '../composition-root';
-import GlobalErrorHandler from '../errors/error-exception-handler';
+import type { ErrorHandler } from '../errors/global-error-handler';
 
 type WebServerConfig = {
   port: number;
@@ -15,15 +14,10 @@ class WebServer {
   private state: 'started' | 'stopped';
   private instance: Server | undefined;
 
-  constructor(
-    private config: WebServerConfig,
-    private controllers: Controllers,
-  ) {
+  constructor(private config: WebServerConfig) {
     this.state = 'stopped';
     this._app = express();
     this.addMiddlewares();
-    this.registerRouters();
-    this.setupGlobalErrorsHandler();
   }
 
   public getApp() {
@@ -34,18 +28,12 @@ class WebServer {
     this._app.use(express.json());
     this._app.use(cors());
   }
-
-  private registerRouters() {
-    const { userController, postController, marketingController } =
-      this.controllers;
-
-    this._app.use('/users', userController.getRouter());
-    this._app.use('/posts', postController.getRouter());
-    this._app.use('/marketing', marketingController.getRouter());
+  public moutRouter(path: string, router: Router) {
+    this._app.use(path, router);
   }
 
-  private setupGlobalErrorsHandler() {
-    this._app.use(GlobalErrorHandler.handle);
+  public setupGlobalErrorHandler(errorHandler: ErrorHandler) {
+    this._app.use(errorHandler);
   }
 
   public async start(): Promise<void> {
