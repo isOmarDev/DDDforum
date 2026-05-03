@@ -8,8 +8,8 @@ const webServer = compositionRoot.getWebServer();
 const db = compositionRoot.getDb();
 
 export const bootstrap = async () => {
-  await webServer.start();
   await db.connect();
+  await webServer.start();
 };
 
 export const app = webServer.getApp();
