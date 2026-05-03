@@ -1,12 +1,20 @@
-import { database } from '../src/shared/bootstrap';
-import { resetDatabase } from './fixtures';
+import { Config } from '../src/shared/config';
+import { CompositionRoot } from '../src/shared/composition-root';
+import { resetDatabase } from './support/fixtures';
+
+const config: Config = new Config('test:e2e');
+const compositionRoot = CompositionRoot.createCompositionRoot(config);
+
+const server = compositionRoot.getWebServer();
+const db = compositionRoot.getDb();
 
 beforeAll(async () => {
-  // Reset database
   await resetDatabase();
+  await db.connect();
+  await server.start();
 });
 
 afterAll(async () => {
-  // Disconnect Prisma so Jest can exit cleanly
-  await database.$disconnect();
+  await db.disconnect();
+  await server.stop();
 });
