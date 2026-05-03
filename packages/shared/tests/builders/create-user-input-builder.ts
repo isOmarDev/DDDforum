@@ -1,12 +1,6 @@
 import { faker } from '@faker-js/faker';
 
-export type CreateUserInput = {
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-};
+import { CreateUserInput } from '../../src/api/users';
 
 export class CreateUserInputBuilder {
   private props: CreateUserInput;

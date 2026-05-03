@@ -1,6 +1,6 @@
 import { InvalidRequestBodyException } from '../../shared/errors/exceptions';
-import { CreateUserInput } from '../../shared/types/user';
 import { isMissingKeys } from '../../shared/utils/utils';
+import { CreateUserInput } from '@dddforum/shared/api/users';
 
 export class CreateUserDTO {
   private constructor(

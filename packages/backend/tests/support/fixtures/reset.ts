@@ -1,4 +1,4 @@
-import { database } from '../../src/shared/bootstrap';
+import { database } from '../../../src/shared/bootstrap';
 
 export async function resetDatabase() {
   const deleteAllUsers = database.user.deleteMany();

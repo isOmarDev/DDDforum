@@ -3,7 +3,7 @@ import {
   EmailAlreadyInUseException,
   UsernameAlreadyTakenException,
 } from './user-exceptions';
-import { UserResponse } from '@dddforum/shared/types/users';
+import { UserResponse } from '../../../../shared/dist/api/users';
 
 export const userErrorCodes = {
   EmailAlreadyInUse: 'EmailAlreadyInUse',
@@ -22,7 +22,7 @@ export class UserErrors {
     if (error instanceof EmailAlreadyInUseException) {
       responseBody = {
         success: false,
-        data: undefined,
+        data: null,
         error: {
           code: 'EmailAlreadyInUse',
           message: error.message,
@@ -35,7 +35,7 @@ export class UserErrors {
     if (error instanceof UsernameAlreadyTakenException) {
       responseBody = {
         success: false,
-        data: undefined,
+        data: null,
         error: {
           code: 'UsernameAlreadyTaken',
           message: error.message,

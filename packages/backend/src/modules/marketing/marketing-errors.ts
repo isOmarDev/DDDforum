@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 
 import { EmailNotAddedToMailListException } from './marketing-exceptions';
-import { MarketingResponse } from '@dddforum/shared/types/marketing';
+import { MarketingResponse } from '@dddforum/shared/api/marketing';
 
 export const marketingErrorCodes = {
   EmailNotAddedToMailList: 'EmailNotAddedToMailList',
@@ -19,7 +19,7 @@ export class MarketingErrors {
     if (error instanceof EmailNotAddedToMailListException) {
       responseBody = {
         success: false,
-        data: undefined,
+        data: null,
         error: {
           code: 'EmailNotAddedToMailList',
           message: error.message,

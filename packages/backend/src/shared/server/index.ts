@@ -52,6 +52,7 @@ class WebServer {
     return new Promise((resolve, reject) => {
       if (!this.instance) return reject('Server not started');
       this.instance.close((error) => {
+        console.log('Server close error:', error);
         if (error) return reject('Error stopping the server');
         this.state = 'stopped';
         resolve('Server stopped');

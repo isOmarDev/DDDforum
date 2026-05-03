@@ -1,4 +1,4 @@
-import { User, Post, Vote, Comment } from '../src/generated/client';
+import { User, Post, Vote, Comment } from './generated/client';
 import { prisma } from '../src/database';
 
 const initialUsers: User[] = [
