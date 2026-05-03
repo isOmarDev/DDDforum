@@ -1,5 +1,5 @@
 import WebServer from '../server';
-import { Database } from '../database';
+import { Database } from '../database/database';
 import { Config } from '../config';
 import { UserModule } from '../../modules/user';
 import { PostModule } from '../../modules/post';
